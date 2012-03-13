@@ -18,9 +18,8 @@ struct thread {
 
 
 thread_t thread_self(void) {
-    //return ready list head
-
-
+    GList head = g_list_first(ready_list);
+    return head->data;
 }
 
 int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
@@ -32,7 +31,7 @@ int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
     
     if(makecontext(newthread->uc, (void (*)(void)) func, 1, funcarg) == -1)
 	return -1;
-    //list_add(ready_list, newthread);
+    ready_list = g_list_append(ready_list, newthread);
     
     return 0;
 }
@@ -40,9 +39,11 @@ int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
 
 int thread_yield(void) {
     
-    thread_t next, current = list_head(ready_list);
-    //remove_head(ready_list);
-    //add_tail(ready_list, t);
+    thread_t next, current;
+    GList head = list_head(ready_list);
+    current = head->data;
+    ready_list = g_list_remove(ready_list, current);
+    ready_list = g_list_append(ready_list, current);
     next = list_head(ready_list);
     return swapcontext(&current->uc, &next->uc);
     
