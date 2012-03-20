@@ -5,10 +5,10 @@
 static void * threadfunc(void * arg)
 {
   char *name = arg;
-  printf("je suis le thread %p, lancé avec l'argument %s\n",
+  fprintf(stderr, "je suis le thread %p, lancé avec l'argument %s\n",
 	 thread_self(), name);
   thread_yield();
-  printf("je suis encore le thread %p, lancé avec l'argument %s\n",
+  fprintf(stderr, "je suis encore le thread %p, lancé avec l'argument %s\n",
 	 thread_self(), name);
   thread_exit(arg);
 }
