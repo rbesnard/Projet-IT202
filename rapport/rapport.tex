@@ -1,0 +1,86 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+
+%%%%%%%%%%%%%%%% Lengths %%%%%%%%%%%%%%%%
+\setlength{\textwidth}{15.5cm}
+\setlength{\evensidemargin}{0.5cm}
+\setlength{\oddsidemargin}{0.5cm}
+
+%%%%%%%%%%%%%%%% Variables %%%%%%%%%%%%%%%%
+
+\def\titre{Ordonnanceur de threads}
+\def\equipe{Romain BESNARD\\ Amandine GEORGES\\ Lun JIANG\\ Quentin LAMBERT}
+
+
+\begin{document}
+
+%%%%%%%%%%%%%%%% Header %%%%%%%%%%%%%%%%
+\fbox{
+  \noindent\begin{minipage}{0.98\textwidth}
+  \vskip 0mm
+  \noindent
+      { \begin{tabular}{p{7.5cm}}
+          {\bfseries \sffamily
+            Projet de système d'exploitation} \\
+          {\itshape \titre}
+      \end{tabular}}
+      \hfill
+      \fbox{\begin{tabular}{l}
+          {~\hfill \bfseries \sffamily Equipe :
+            \hfill~} \\[2mm]
+          \equipe \\
+
+      \end{tabular}}
+      \vskip 4mm ~
+
+      ~~~\parbox{0.95\textwidth}{\small \textit{Résumé~:} \sffamily Le
+        projet qui nous a été proposé consiste en l'implémentation
+        d'un ordonnanceur de threads. Nous étions tenus dans un
+        premier temps d'éxecuter un programme exemple manipulant
+        certaines primitives du module.}
+
+      \vskip 1mm ~
+
+  \end{minipage}
+}
+
+\section {La structure thread}
+
+Un type \verb'thread_t' devait être implémenté, nous avons décidé
+qu'il devrait représenter un pointeur vers une structure thread que
+nous allons maintenant détailler.\\
+% detail et justification de la structure thread
+\begin{verbatim}
+struct thread {
+    ucontext_t uc;
+    void *retval;
+    struct GList * sleeping_list;
+}
+\end{verbatim}
+Le champ \verb'uc' sert à conserver le contexte d'exécution du thread,
+\verb'retval' quant à lui permet de stocker la valeur de retour du
+thread pour pouvoir remettre cette information aux threads dormants.
+Le dernier champ est la liste des threads dormants dans l'attente de
+la fin de l'exécution de ce thread.
+
+\section {Les threads dans l'état "ready" et "zombie"}
+
+Nous avons choisi de stocker ces threads dans deux listes distinctes
+pour chacun des états. Les threads "ready" sont ceux prêts à
+s'exécuter, et les "zombies" ont terminé leur exécution et attendent
+que leur valeur de retour soit récupérée.\\
+Nous avons pris comme convention que la tête de la liste "ready" est
+le thread en cours d'exécution.
+
+\section {Utilisation de la GLib}
+
+Pour nous abstraire de l'implementation du TAD list nous avons utilisé
+la GLib, nous fournissant les fonctions nécessaires à la manipulation
+des listes de threads tout en nous assurant qu'il n'y aura aucune
+fuite mémoire.
+
+
+\end{document}
