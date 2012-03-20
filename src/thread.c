@@ -36,8 +36,8 @@ int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
     (*newthread)->uc.uc_stack.ss_sp = malloc((*newthread)->uc.uc_stack.ss_size);
     (*newthread)->uc.uc_link = NULL;
 
-    if(makecontext(&(*newthread)->uc, (void (*)(void)) func, 1, funcarg) == -1)
-	return -1;
+    makecontext(&(*newthread)->uc, (void (*)(void)) func, 1, funcarg);
+    //return -1;
     ready_list = g_list_append(ready_list, newthread);
 
     return 0;
@@ -89,5 +89,5 @@ void thread_exit(void *retval) {
     zombie_list = g_list_append(zombie_list, head);
     ready_list = g_list_remove(ready_list, head);
 
-    setcontext(((thread_t)g_list_nth_data(ready_list, 0))->uc);
+    setcontext(&(((thread_t)g_list_nth_data(ready_list, 0))->uc));
 }
