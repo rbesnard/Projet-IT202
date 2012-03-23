@@ -49,8 +49,8 @@
 
 \section {La structure thread}
 
-Un type \verb'thread_t' devait être implémenté, nous avons décidé
-qu'il devrait représenter un pointeur vers une structure thread que
+Un type \verb'thread_t' devait être implémenté pour correspondre à la librairie existante \verb'pthread', nous avons décidé
+qu'il représenterait un pointeur vers une structure thread que
 nous allons maintenant détailler.\\
 % detail et justification de la structure thread
 \begin{verbatim}
@@ -62,7 +62,7 @@ struct thread {
 \end{verbatim}
 Le champ \verb'uc' sert à conserver le contexte d'exécution du thread,
 \verb'retval' quant à lui permet de stocker la valeur de retour du
-thread pour pouvoir remettre cette information aux threads dormants.
+thread attendu après un \verb'thread_join', le thread dormant pourra alors la récupérer dans son champ \verb'retval'.
 Le dernier champ est la liste des threads dormants dans l'attente de
 la fin de l'exécution de ce thread.
 
@@ -70,9 +70,9 @@ la fin de l'exécution de ce thread.
 
 Nous avons choisi de stocker ces threads dans deux listes distinctes
 pour chacun des états. Les threads "ready" sont ceux prêts à
-s'exécuter, et les "zombies" ont terminé leur exécution et attendent
+s'exécuter, et les "zombies" ceux qui ont terminé leur exécution et attendent
 que leur valeur de retour soit récupérée.\\
-Nous avons pris comme convention que la tête de la liste "ready" est
+Nous avons pris comme convention que la tête de la liste "ready" soit
 le thread en cours d'exécution.
 
 \section {Utilisation de la GLib}
@@ -81,6 +81,5 @@ Pour nous abstraire de l'implementation du TAD list nous avons utilisé
 la GLib, nous fournissant les fonctions nécessaires à la manipulation
 des listes de threads tout en nous assurant qu'il n'y aura aucune
 fuite mémoire.
-
 
 \end{document}
