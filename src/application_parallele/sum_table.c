@@ -7,7 +7,8 @@
 struct tableau{
     int i;
     int j;
-    const int *ptr;
+    int size;
+    int *ptr;
 };
 
 void
@@ -15,17 +16,32 @@ sum(struct tableau *T) {
 
     thread_t thread1, thread2;
     void * retval1, *retval2;
-    int err;
+    int err,k;
     if(T->i!=T->j){
-	struct tableau T1,T2;
-	T1.ptr=T2.ptr=T->ptr;
-	T1.i=T->i;
-	T1.j=(T->i+T->j)/2;
-	T2.i=(T->i+T->j)/2+1;
-	T2.j=T->j;
-	err = thread_create(&thread1,(void *(*)(void *)) sum, (void *)&T1);
+	struct tableau *T1,*T2;
+	/* T1.ptr=T->ptr; */
+	/* T2.ptr=T->ptr; */
+
+	T1=malloc(sizeof *T1);
+	T2=malloc(sizeof *T2);
+	T1->ptr=malloc(T->size * sizeof *T1->ptr);
+	T2->ptr=malloc(T->size * sizeof *T2->ptr);
+	for(k;k<T->size;k++) {
+	    T1->ptr[k]=T->ptr[k];
+	    T2->ptr[k]=T->ptr[k];
+	}
+
+	T1->size=T->size;
+	T2->size=T->size;
+
+
+	T1->i=T->i;
+	T1->j=(T->i+T->j)/2;
+	T2->i=(T->i+T->j)/2+1;
+	T2->j=T->j;
+	err = thread_create(&thread1,(void *(*)(void *)) sum, (void *)T1);
 	assert(!err);
-	err = thread_create(&thread2,(void *(*)(void *)) sum, (void *)&T2);
+	err = thread_create(&thread2,(void *(*)(void *)) sum, (void *)T2);
 	assert(!err);
 
 	err = thread_join(thread2, retval2);
@@ -44,6 +60,7 @@ int
 main(int argc, char **argv) {
     (void)argc;
     int i,size=atoi(argv[1]);
+    //    int *T=malloc(size * sizeof *T);
     int T[size];
 
     printf("T={ ");
