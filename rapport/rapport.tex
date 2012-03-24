@@ -73,14 +73,14 @@ threads dormants dans l'attente de la fin de l'exécution de ce thread.
 
 Nous avons choisi de stocker ces threads dans deux listes distinctes
 pour chacun des états. Les threads "ready" sont ceux prêts à
-s'exécuter, et les "zombies" ont terminé leur exécution et attendent
+s'exécuter, et les threads "zombie" ont terminé leur exécution et attendent
 que leur valeur de retour soit récupérée.\\
 Nous avons pris comme convention que la tête de la liste "ready" est
 le thread en cours d'exécution.
 
 \section {Utilisation de la GLib}
 
-Pour nous abstraire de l'implementation du TAD list nous avons utilisé
+Pour nous abstraire de l'implémentation du TAD list nous avons utilisé
 la GLib, nous fournissant les fonctions nécessaires à la manipulation
 des listes de threads tout en nous assurant qu'il n'y aura aucune
 fuite mémoire.
