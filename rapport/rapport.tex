@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[12pt]{article}
 
 \usepackage{graphicx}
 \usepackage[french]{babel}
@@ -94,14 +94,14 @@ cette fonction renvoie just la tête de la liste "ready".
 int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg);
 \end{verbatim}
 
-Cette fonction a la responsablité d'ajouter le thread main dans la liste "ready", 
-si c'est la première fois qu'on crée un thread. 
-Comme la liste "ready" est initiallement vide,  elle verifie donc si cette liste est vide, et si c'est le cas, 
-elle alloue une instance de la structure thread, 
-sauvegarde le contexte du main dans cette instance et la place à la tête de la liste.
-Puis elle crée une instance de la structure thread avec la fontion
-passée en paramètre et retourne un thread_t pointant sur cette structure.
-~~\\
+Cette fonction a la responsablité d'ajouter le thread main dans la
+liste "ready", si c'est la première fois qu'on crée un thread.  Comme
+la liste "ready" est initiallement vide, elle verifie donc si cette
+liste est vide, et si c'est le cas, elle alloue une instance de la
+structure thread, sauvegarde le contexte du main dans cette instance
+et la place à la tête de la liste.  Puis elle crée une instance de la
+structure thread avec la fontion passée en paramètre et retourne un
+thread\_t pointant sur cette structure.  ~~\\
 \begin{verbatim}
 int thread_yield(void);
 \end{verbatim}
@@ -111,18 +111,37 @@ la liste "ready" (qui est le thread courant) et celui de l'élément suivant.
 \begin{verbatim}
 int thread_join(thread_t thread, void **retval);
 \end{verbatim}
-Cette fonction verifie tout d'abord, si le thread qu'on veut 
-attendre est dans la liste "ready". si c'est le cas 
-alors elle se met dans la liste des dormants de ce thread et passe la main au suivant.
-Sinon elle verifie si ce thread est la liste "zombie", 
-si c'est le cas alors elle prend la valeur de retour de ce thread et continue son exécution.
-Enfin si ce thread n'est pas dans la liste "zombie" 
-alors elle retourne -1 pour dire que l'appel a échoué et que ce thread n'existe pas.
-~~\\   
+Cette fonction verifie tout d'abord, si le thread qu'on veut attendre
+est dans la liste "ready". si c'est le cas alors elle se met dans la
+liste des dormants de ce thread et passe la main au suivant.  Sinon
+elle verifie si ce thread est la liste "zombie", si c'est le cas alors
+elle prend la valeur de retour de ce thread et continue son exécution.
+Enfin si ce thread n'est pas dans la liste "zombie" alors elle
+retourne -1 pour dire que l'appel a échoué et que ce thread n'existe
+pas.  ~~\\
 \begin{verbatim}
 void thread_exit(void *retval);
 \end{verbatim}
 Cette fonction réveille tous les threads de sa liste des dormants et
- met à jour son champ retval avec la valeur en paramètre. Puis elle se met dans la liste "zombie" et passe la main au suivant.
-\end{document}
+met à jour son champ retval avec la valeur en paramètre. Puis elle se
+met dans la liste "zombie" et passe la main au suivant.
 
+\section{La mémoire}
+Pour l'instant aucune libération de mémoire n'est faite. En
+particulier nous ne nous sommes pas encore posé la question de quand
+libérer les les threads de la liste zombies. Cela pose un problème
+evident lorsque le nombre de threads devient important. Nous nous
+attelerons donc en priorité à la résolution de ce problème.
+
+\section{Améliorations prévue}
+Nous avons implémenté les programmes parallèles du calcul de la suite
+de fibonacci et de la somme d'un tableau en diviser pour régner. Cela
+nous permettra de tester les performances de notre bibliothèque, en
+évaluant le temps d'éxecution en fonction de la taille de l'entrée.
+Il nous semble que la gestion du thread principal est déjà prise en
+compte, il conviendra de s'en assurer. Nous pensons mettre au point
+des fonctions de synchronisation de type sémaphore. Nous aimerions
+aussi nous pencher sur la gestion de la préemption et des signaux.
+
+
+\end{document}
