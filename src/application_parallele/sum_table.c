@@ -14,7 +14,7 @@ int
 sum(struct tableau *T) {
 
     thread_t thread1, thread2;
-    int retval1, retval2;
+    void * retval1, *retval2;
     int err;
     if(T->i!=T->j){
 	struct tableau T1,T2;
@@ -28,12 +28,12 @@ sum(struct tableau *T) {
 	err = thread_create(&thread2,(void *(*)(void *)) sum, (void *)&T2);
 	assert(!err);
 
-	err = thread_join(thread2, (void **)&retval2);
+	err = thread_join(thread2, retval2);
 	assert(!err);
-	err = thread_join(thread1, (void **)&retval1);
+	err = thread_join(thread1, retval1);
 	assert(!err);
 
-	return retval1+retval2;
+	return *(int*)retval1+*(int*)retval2;
     }
     else
 	return T->ptr[T->i];
@@ -56,7 +56,7 @@ main(int argc, char **argv) {
     struct tableau tab;
     tab.ptr=T;
     tab.i=0;
-    tab.i=size-1;
+    tab.j=size-1;
 
     printf("sum=%d\n",sum(&tab));
 
