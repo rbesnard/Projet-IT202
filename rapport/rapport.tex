@@ -47,6 +47,8 @@
   \end{minipage}
 }
 
+~~\\
+~~\\
 \section {La structure thread}
 
 Un type \verb'thread_t' devait être implémenté, nous avons décidé
@@ -62,7 +64,7 @@ struct thread {
 \end{verbatim}
 Le champ \verb'uc' sert à conserver le contexte d'exécution du thread,
 \verb'retval' quant à lui permet de stocker la valeur de retour du
-thread pour pouvoir remettre cette information aux threads dormants.
+thread quand celui-ci est dans la liste "zombie". Mais quand ce thread est dans la liste "ready", elle peut contenir la valeur de retour du thread qu'il attend éventuellement.
 Le dernier champ est la liste des threads dormants dans l'attente de
 la fin de l'exécution de ce thread.
 
@@ -100,7 +102,7 @@ Comme la liste "ready" est initiallement vide,  elle verifie donc si cette liste
 elle alloue une instance de la structure thread, 
 sauvegarde le contexte du main dans cette instance et la place à la tête de la liste.
 Puis elle crée une instance de la structure thread avec la fontion
-passée en paramètre et retourne un thread_t pointant sur cette structure.
+passée en paramètre et retourne un thread\_t pointant sur cette structure.
 ~~\\
 \begin{verbatim}
 int thread_yield(void);
