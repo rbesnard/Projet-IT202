@@ -7,10 +7,10 @@
 struct tableau{
     int i;
     int j;
-    int *ptr;
+    const int *ptr;
 };
 
-int
+void
 sum(struct tableau *T) {
 
     thread_t thread1, thread2;
@@ -33,10 +33,10 @@ sum(struct tableau *T) {
 	err = thread_join(thread1, retval1);
 	assert(!err);
 
-	return *(int*)retval1+*(int*)retval2;
+	thread_exit((int)retval1+(int)retval2);
     }
     else
-	return T->ptr[T->i];
+	thread_exit(T->ptr[T->i]);
 }
 
 
@@ -54,11 +54,18 @@ main(int argc, char **argv) {
     printf("}\n");
 
     struct tableau tab;
+    thread_t thread;
+    void *retval;
+    int err;
+
     tab.ptr=T;
     tab.i=0;
     tab.j=size-1;
 
-    printf("sum=%d\n",sum(&tab));
+    err = thread_create(&thread, (void * (*) (void *))sum,(void*) (void *)&T);
+    assert(!err);
+    err = thread_join(thread, &retval);
+    printf("sum=%d\n",(int)retval);
 
     return EXIT_SUCCESS;
 }
