@@ -84,9 +84,10 @@ int thread_join(thread_t thread, void **retval) {
 
 	*retval = waiter->retval;
     }
-    else
+    else {
 	fprintf(stderr, "le thread %p n'existe pas\n", thread);
-
+	return -1;
+    }
     return 0;
 }
 
