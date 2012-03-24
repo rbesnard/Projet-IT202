@@ -22,23 +22,20 @@ struct thread {
 
 
 thread_t thread_self(void) {
-    return (thread_t)g_list_nth_data(ready_list, 1);
+    return (thread_t)g_list_nth_data(ready_list, 0);
 }
 
 int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
     if (ready_list == NULL){
-	thread_t main_thread;
-	ready_list = g_list_alloc();
-	main_thread=malloc(sizeof(struct thread));
-	getcontext(&main_thread->uc);
-	ready_list = g_list_append(ready_list, main_thread);
+    	thread_t main_thread;
+    	main_thread=malloc(sizeof(struct thread));
+    	getcontext(&main_thread->uc);
+    	ready_list = g_list_append(ready_list, main_thread);
     }
-    if (zombie_list == NULL)
-	zombie_list = g_list_alloc();
 
     *newthread = malloc(sizeof(struct thread));
     (*newthread)->sleeping_list = NULL;
-    
+
     if(getcontext(&((*newthread)->uc)) == -1)
 	return -1;
     (*newthread)->uc.uc_stack.ss_size = 64*1024;
@@ -55,52 +52,42 @@ int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
 
 
 int thread_yield(void) {
-    thread_t next, current = g_list_nth_data(ready_list, 1);
+    thread_t next, current = g_list_nth_data(ready_list, 0);
 
     ready_list = g_list_remove(ready_list, current);
     ready_list = g_list_append(ready_list, current);
 
-    next = g_list_nth_data(ready_list, 1);
+    next = g_list_nth_data(ready_list, 0);
     return swapcontext(&current->uc, &next->uc);
 }
 
 int thread_join(thread_t thread, void **retval) {
-    int found = 0;
-    int i;
-    for(i = 1; i < g_list_length(ready_list); i++) {
-	if(thread == g_list_nth_data(ready_list, i)) 
-	    found = 1;
-	else {
-	    if(g_list_find(ready_list, thread) != NULL)
-		found = 1;
-	}
-    }
+    if (g_list_index(ready_list,thread)!=-1){
 
-    if(found){
+	thread_t next, current = g_list_nth_data(ready_list, 0);
 
-	thread_t next, current = g_list_nth_data(ready_list, 1);    
-	
-	if (thread->sleeping_list == NULL)
-	    thread-> sleeping_list = g_list_alloc();
-	
 	ready_list = g_list_remove(ready_list, current);
-	
+
 	thread->sleeping_list = g_list_append(thread->sleeping_list, current);
-    
-    
-	next = g_list_nth_data(ready_list, 1);
-    
 
+	next = g_list_nth_data(ready_list, 0);
 
-	//fprintf(stderr, "c:%p, n:%p\n", current, next);
-	
 	if(swapcontext(&current->uc, &next->uc) == -1)
 	    return -1;
 
 	*retval = current->retval;
     }
+    else if (g_list_index(zombie_list,thread)!=-1){
 
-    return 0;   
+	thread_t waiter = g_list_nth_data(zombie_list,(g_list_index(zombie_list,
+								    thread)));
+
+	*retval = waiter->retval;
+    }
+    else
+	fprintf(stderr, "le thread %p n'existe pas\n", thread);
+
+    return 0;
 }
 
 
@@ -114,7 +101,7 @@ static void wakeup_func(thread_t data, gpointer user_data) {
 
 void thread_exit(void *retval) {
 
-    thread_t head = g_list_nth_data(ready_list, 1);
+    thread_t head = g_list_nth_data(ready_list, 0);
 
     g_list_foreach(head->sleeping_list,
 		   (GFunc)wakeup_func,
@@ -122,10 +109,12 @@ void thread_exit(void *retval) {
 
     g_list_free(head->sleeping_list);
 
+
+    head->retval=retval;
     zombie_list = g_list_append(zombie_list, head);
     ready_list = g_list_remove(ready_list, head);
 
-    setcontext(&(((thread_t)g_list_nth_data(ready_list, 1))->uc));
+    setcontext(&(((thread_t)g_list_nth_data(ready_list, 0))->uc));
 
     exit(0);
 }
