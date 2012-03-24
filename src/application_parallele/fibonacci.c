@@ -9,6 +9,7 @@ int fibonacci(int n){
 	thread_exit(1);
 	return 1;
     }
+
     else{
 	thread_t thread1, thread2;
 	void * retval1, *retval2;
