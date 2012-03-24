@@ -4,7 +4,7 @@
 
 int fibonacci(int n){
     if (n == 1 || n == 2)
-	return 1;
+	thread_exit((void *)1);
     else{
 	thread_t thread1, thread2;
 	void * retval1, *retval2;
@@ -19,7 +19,7 @@ int fibonacci(int n){
 	assert(!err);
 	err = thread_join(thread1, &retval1);
 	assert(!err);
-	return (int)*retval1+(int)*retval2;
+	thread_exit((void *)((int)retval1+(int)retval2));
     }
 }
 
