@@ -2,14 +2,7 @@
 #include <glib.h>
 #include <stdlib.h>
 #include <ucontext.h>
-//to remove
-#include<stdio.h>
-
-/*
- *TODO Q -> liste de thread
- *          Ready
- *          Zombie
- */
+#include <stdio.h>
 
 GList * ready_list=NULL;
 GList * zombie_list=NULL;
@@ -29,7 +22,7 @@ int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
     if (ready_list == NULL){
     	thread_t main_thread;
     	main_thread=malloc(sizeof(struct thread));
-    	getcontext(&main_thread->uc);
+    	//getcontext(&main_thread->uc);
     	ready_list = g_list_append(ready_list, main_thread);
     }
 
@@ -62,7 +55,20 @@ int thread_yield(void) {
 }
 
 int thread_join(thread_t thread, void **retval) {
-    if (g_list_index(ready_list,thread)!=-1){
+
+    int found = 0;
+    unsigned int i;
+    for(i = 0; i < g_list_length(ready_list); i++) {
+	thread_t t = g_list_nth_data(ready_list, i);
+	if(thread == t) 
+	    found = 1;
+	else {
+	    if(g_list_find(t->sleeping_list, thread) != NULL)
+		found = 1;
+	}
+    }
+
+    if (found){
 
 	thread_t next, current = g_list_nth_data(ready_list, 0);
 
@@ -74,7 +80,7 @@ int thread_join(thread_t thread, void **retval) {
 
 	if(swapcontext(&current->uc, &next->uc) == -1)
 	    return -1;
-
+	
 	*retval = current->retval;
     }
     else if (g_list_index(zombie_list,thread)!=-1){
