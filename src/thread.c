@@ -82,13 +82,19 @@ int thread_join(thread_t thread, void **retval) {
 	    return -1;
 	
 	*retval = current->retval;
+	
+	if(g_list_length(ready_list) == 1) {
+	    g_list_remove(ready_list, thread);
+	    free(thread);
+	}
     }
     else if (g_list_index(zombie_list,thread)!=-1){
 
 	thread_t waiter = g_list_nth_data(zombie_list,(g_list_index(zombie_list,
 								    thread)));
-
+	
 	*retval = waiter->retval;
+
     }
     else {
 	fprintf(stderr, "le thread %p n'existe pas\n", thread);

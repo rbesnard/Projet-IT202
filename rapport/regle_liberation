@@ -1,0 +1,5 @@
+Un thread est attendu par au moins un autre thread.
+
+Un thread est libéré soit :
+   - lorsque un thread fait un join dessus alors qu'il est en état zombie
+   - lors de la reprise d'un thread qui l'atjhtendait
