@@ -5,12 +5,12 @@ CC=gcc
 CFLAGS = -W -Wall -g `pkg-config --cflags glib-2.0`
 LDFLAGS = `pkg-config --libs glib-2.0`
 
-VPATH=./
+VPATH=./:application_parallele/
 SRC=$(wildcard $(patsubst %/,%/*.c,$(subst :, ,$(VPATH))))
 DEP=$(patsubst %.c, %.d, $(SRC))
 OBJ=$(patsubst %.c, %.o, $(SRC))
 
-TARGET=example
+TARGET=example fibonacci sum_table
 
 BOLD="\033[01m"
 NORMAL="\033[0m"
@@ -38,7 +38,13 @@ clean-all :
 
 all : $(TARGET)
 
+fibonacci : thread.o fibonacci.o
+
+sum_table : thread.o sum_table.o
+
 example : example.o thread.o
+
+% : %.o
 	@echo -n $(BOLD)"$(CC) -o $@ $^ $(LDFLAGS) : "$(NORMAL)
 	@($(CC) -o $@ $^ $(LDFLAGS) 2> .tmp && $(OK) && $(ERROR)) || ($(FAILED) && $(ERROR) && false)
 
