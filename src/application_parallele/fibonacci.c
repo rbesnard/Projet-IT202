@@ -32,14 +32,15 @@ int fibonacci(int n){
     }
 }
 
-int main(){
+int main(int argc, char **argv) {
     thread_t threadfibo;
     void * retval;
     int err;
-    int n = 10;
+    int n = atoi(argv[1]);
     err = thread_create(&threadfibo, (void * (*) (void *))fibonacci,(void*) n);
     assert(!err);
     err = thread_join(threadfibo, &retval);
     printf("fibonacci(%d)=%d\n",n,(int)retval);
     return 0;
 }
+
