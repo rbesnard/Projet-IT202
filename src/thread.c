@@ -86,6 +86,8 @@ int thread_join(thread_t thread, void **retval) {
 	if(g_list_length(ready_list) == 1) {
 	    g_list_remove(ready_list, thread);
 	    free(thread);
+	    ready_list = NULL;
+	    //free ready list ??
 	}
     }
     else if (g_list_index(zombie_list,thread)!=-1){
