@@ -2,7 +2,9 @@
 #include <glib.h>
 #include <stdlib.h>
 #include <ucontext.h>
-#include <stdio.h>
+
+//to remove
+#include<stdio.h>
 
 GList * ready_list=NULL;
 GList * zombie_list=NULL;
@@ -82,23 +84,27 @@ int thread_join(thread_t thread, void **retval) {
 	    return -1;
 	
 	*retval = current->retval;
-	
-	if(g_list_length(ready_list) == 1) {
-	    g_list_remove(ready_list, thread);
+
+	if (g_list_index(zombie_list, thread) != -1){
+	    zombie_list = g_list_remove(zombie_list,thread);
+	    free(thread->uc.uc_stack.ss_sp);
+	    /* free(thread->retval); */
 	    free(thread);
-	    ready_list = NULL;
-	    //free ready list ??
+
 	}
     }
     else if (g_list_index(zombie_list,thread)!=-1){
 
-	thread_t waiter = g_list_nth_data(zombie_list,(g_list_index(zombie_list,
-								    thread)));
-	
-	*retval = waiter->retval;
-
-    }
+	    thread_t waiter = g_list_nth_data(zombie_list,(g_list_index(zombie_list,
+									thread)));
+	    *retval = waiter->retval;
+	    zombie_list = g_list_remove(zombie_list,thread);
+	    free(thread->uc.uc_stack.ss_sp);
+	    /* free(thread->retval); */
+	    free(thread);
+	}
     else {
+	*retval = NULL;
 	fprintf(stderr, "le thread %p n'existe pas\n", thread);
 	return -1;
     }

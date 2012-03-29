@@ -32,7 +32,7 @@ int fibonacci(int n){
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv){
     thread_t threadfibo;
     void * retval;
     int err;
