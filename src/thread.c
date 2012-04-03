@@ -2,7 +2,7 @@
 #include <glib.h>
 #include <stdlib.h>
 #include <ucontext.h>
-
+#include <valgrind/valgrind.h>
 //to remove
 #include<stdio.h>
 
@@ -13,6 +13,9 @@ struct thread {
     ucontext_t uc;
     GList * sleeping_list;
     void *retval;
+
+    /*valgrind stackid*/
+    int stackid;
 };
 
 
@@ -24,6 +27,7 @@ int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
     if (ready_list == NULL){
     	thread_t main_thread;
     	main_thread=malloc(sizeof(struct thread));
+	main_thread->sleeping_list=NULL;
     	//getcontext(&main_thread->uc);
     	ready_list = g_list_append(ready_list, main_thread);
     }
@@ -35,6 +39,13 @@ int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
 	return -1;
     (*newthread)->uc.uc_stack.ss_size = 64*1024;
     (*newthread)->uc.uc_stack.ss_sp = malloc((*newthread)->uc.uc_stack.ss_size);
+
+    /* juste après l'allocation de la pile */
+    (*newthread)->stackid =
+	VALGRIND_STACK_REGISTER((*newthread)->uc.uc_stack.ss_sp,
+				(*newthread)->uc.uc_stack.ss_sp +
+				(*newthread)->uc.uc_stack.ss_size);
+
     (*newthread)->uc.uc_link = NULL;
 
     makecontext(&(*newthread)->uc, (void (*)(void)) func, 1, funcarg);
@@ -62,7 +73,7 @@ int thread_join(thread_t thread, void **retval) {
     unsigned int i;
     for(i = 0; i < g_list_length(ready_list); i++) {
 	thread_t t = g_list_nth_data(ready_list, i);
-	if(thread == t) 
+	if(thread == t)
 	    found = 1;
 	else {
 	    if(g_list_find(t->sleeping_list, thread) != NULL)
@@ -82,28 +93,30 @@ int thread_join(thread_t thread, void **retval) {
 
 	if(swapcontext(&current->uc, &next->uc) == -1)
 	    return -1;
-	
+
 	*retval = current->retval;
 
 	if (g_list_index(zombie_list, thread) != -1){
 	    zombie_list = g_list_remove(zombie_list,thread);
 	    free(thread->uc.uc_stack.ss_sp);
-	    /* free(thread->retval); */
+	    /* juste avant de libérer la pile */
+	    VALGRIND_STACK_DEREGISTER(thread->stackid);
+
 	    free(thread);
 
 	}
 
 	thread_t cur_t =  g_list_nth_data(ready_list, 0);
 	if(g_list_length(ready_list)==1 && g_list_length(cur_t->sleeping_list)==0){
-	    fprintf(stderr, "Total Anihilation\n");
-	    
+	    //	    fprintf(stderr, "Total Annihilation\n");
+
 	    g_list_free(cur_t->sleeping_list);
+
 	    free(cur_t);
-	    
+
 	    g_list_free(ready_list);
 	    ready_list=NULL;
 	}
-
     }
     else if (g_list_index(zombie_list,thread)!=-1){
 
@@ -112,9 +125,11 @@ int thread_join(thread_t thread, void **retval) {
 	    *retval = waiter->retval;
 	    zombie_list = g_list_remove(zombie_list,thread);
 	    free(thread->uc.uc_stack.ss_sp);
+	    /* juste avant de libérer la pile */
+	    VALGRIND_STACK_DEREGISTER(thread->stackid);
 	    /* free(thread->retval); */
 	    free(thread);
-	}
+    }
     else {
 	*retval = NULL;
 	fprintf(stderr, "le thread %p n'existe pas\n", thread);
@@ -141,7 +156,6 @@ void thread_exit(void *retval) {
 		   retval);
 
     g_list_free(head->sleeping_list);
-    free(head->uc.uc_stack.ss_sp);
 
     head->retval=retval;
     zombie_list = g_list_append(zombie_list, head);
