@@ -92,6 +92,18 @@ int thread_join(thread_t thread, void **retval) {
 	    free(thread);
 
 	}
+
+	thread_t cur_t =  g_list_nth_data(ready_list, 0);
+	if(g_list_length(ready_list)==1 && g_list_length(cur_t->sleeping_list)==0){
+	    fprintf(stderr, "Total Anihilation\n");
+	    
+	    g_list_free(cur_t->sleeping_list);
+	    free(cur_t);
+	    
+	    g_list_free(ready_list);
+	    ready_list=NULL;
+	}
+
     }
     else if (g_list_index(zombie_list,thread)!=-1){
 
@@ -129,7 +141,7 @@ void thread_exit(void *retval) {
 		   retval);
 
     g_list_free(head->sleeping_list);
-
+    free(head->uc.uc_stack.ss_sp);
 
     head->retval=retval;
     zombie_list = g_list_append(zombie_list, head);
