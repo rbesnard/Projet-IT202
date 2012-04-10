@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <ucontext.h>
 #include <valgrind/valgrind.h>
-//to remove
 #include<stdio.h>
 
 GList * ready_list=NULL;
