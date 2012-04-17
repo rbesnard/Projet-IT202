@@ -6,15 +6,6 @@
 //to remove
 #include<stdio.h>
 
-//SIGNALS DEFINE
-#define NB_SIG 6
-#define SIG_KILL 0
-#define SIG_STOP 1
-#define SIG_USR1 2
-#define SIG_USR2 3
-#define SIG_USR3 4
-#define SIG_USR4 5
-
 typedef void(*treat_func)(int);
 
 //initial treatment signal function
@@ -63,6 +54,8 @@ int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
 	main_thread->sleeping_list=NULL;
     	//getcontext(&main_thread->uc);
     	ready_list = g_list_append(ready_list, main_thread);
+	
+	thread_initSigTab(main_thread);
     }
 
     *newthread = malloc(sizeof(struct thread));
@@ -84,7 +77,8 @@ int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
     makecontext(&(*newthread)->uc, (void (*)(void)) func, 1, funcarg);
     //return -1;
     ready_list = g_list_append(ready_list, *newthread);
-
+    
+    thread_initSigTab(*newthread);
 
     return 0;
 }
@@ -92,12 +86,17 @@ int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg) {
 
 int thread_yield(void) {
     thread_t next, current = g_list_nth_data(ready_list, 0);
-
+    int ok;
     ready_list = g_list_remove(ready_list, current);
     ready_list = g_list_append(ready_list, current);
 
     next = g_list_nth_data(ready_list, 0);
-    return swapcontext(&current->uc, &next->uc);
+    ok=swapcontext(&current->uc, &next->uc);
+    
+    if(!ok)
+      thread_sigTreat(current);
+    
+    return ok;
 }
 
 int thread_join(thread_t thread, void **retval) {
@@ -128,6 +127,8 @@ int thread_join(thread_t thread, void **retval) {
 	    return -1;
 
 	*retval = current->retval;
+	
+	thread_sigTreat(current);
 
 	if (g_list_index(zombie_list, thread) != -1){
 	    zombie_list = g_list_remove(zombie_list,thread);
