@@ -225,6 +225,8 @@ void thread_initSigTab(thread_t thr){
   
   for(i=0; i<NB_SIG; i++)
     thr->treat_tab[i]=basic_sig_treatment;
+
+  thr->sig_list = NULL;
 }
 
 void thread_sigTreat(thread_t thr){
