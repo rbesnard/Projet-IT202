@@ -2,4 +2,9 @@ Un thread est attendu par au moins un autre thread.
 
 Un thread est libéré soit :
    - lorsque un thread fait un join dessus alors qu'il est en état zombie
-   - lors de la reprise d'un thread qui l'atjhtendait
+   - lors de la reprise d'un thread qui l'attendait
+
+
+l'utilisatoin de la glib impose :
+- G_SLICE=always-malloc valgrind --leak-check=full --show-reachable=yes ./example
+- un accès au dernier élément de la liste qui ne peut pas se faire en temps constant.
