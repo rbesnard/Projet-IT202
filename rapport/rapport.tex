@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[12pt]{article}
 
 \usepackage{graphicx}
 \usepackage[french]{babel}
@@ -39,7 +39,7 @@
       ~~~\parbox{0.95\textwidth}{\small \textit{Résumé~:} \sffamily Le
         projet qui nous a été proposé consiste en l'implémentation
         d'un ordonnanceur de threads. Nous étions tenus dans un
-        premier temps d'éxecuter un programme exemple manipulant
+        premier temps d'exécuter un programme exemple manipulant
         certaines primitives du module.}
 
       \vskip 1mm ~
@@ -47,6 +47,8 @@
   \end{minipage}
 }
 
+~~\\
+~~\\
 \section {La structure thread}
 
 Un type \verb'thread_t' devait être implémenté pour correspondre à la librairie existante \verb'pthread', nous avons décidé
@@ -62,24 +64,102 @@ struct thread {
 \end{verbatim}
 Le champ \verb'uc' sert à conserver le contexte d'exécution du thread,
 \verb'retval' quant à lui permet de stocker la valeur de retour du
+<<<<<<< HEAD
 thread attendu après un \verb'thread_join', le thread dormant pourra alors la récupérer dans son champ \verb'retval'.
 Le dernier champ est la liste des threads dormants dans l'attente de
 la fin de l'exécution de ce thread.
+=======
+thread quand celui-ci est dans la liste "zombie". Mais quand il
+est dans la liste "ready", \verb'retval' peut contenir la valeur de retour du
+thread qu'il attend. Le dernier champ est la liste des
+threads dormants dans l'attente de la fin de l'exécution de ce thread.
+>>>>>>> 04648c0efa9873b3fd68e5921bf83eadf84ac5cd
 
 \section {Les threads dans l'état "ready" et "zombie"}
 
 Nous avons choisi de stocker ces threads dans deux listes distinctes
 pour chacun des états. Les threads "ready" sont ceux prêts à
+<<<<<<< HEAD
 s'exécuter, et les "zombies" ceux qui ont terminé leur exécution et attendent
+=======
+s'exécuter, et les threads "zombie" ont terminé leur exécution et attendent
+>>>>>>> 04648c0efa9873b3fd68e5921bf83eadf84ac5cd
 que leur valeur de retour soit récupérée.\\
 Nous avons pris comme convention que la tête de la liste "ready" soit
 le thread en cours d'exécution.
 
 \section {Utilisation de la GLib}
 
-Pour nous abstraire de l'implementation du TAD list nous avons utilisé
+Pour nous abstraire de l'implémentation du TAD list nous avons utilisé
 la GLib, nous fournissant les fonctions nécessaires à la manipulation
 des listes de threads tout en nous assurant qu'il n'y aura aucune
 fuite mémoire.
 
+<<<<<<< HEAD
+=======
+\section {L'implémentation des fonctions}
+
+\begin{verbatim}
+thread_t thread_self(void);
+\end{verbatim}
+Avec notre choix de mettre le thread courant en tête de la liste "ready", 
+cette fonction renvoie simplement la tête de la liste "ready".
+~~\\
+\begin{verbatim}
+int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg);
+\end{verbatim}
+
+
+Cette fonction a la responsablité d'ajouter le thread main dans la
+liste "ready", si c'est la première fois qu'on crée un thread.  Comme
+la liste "ready" est initialement vide, la fonction vérifie si cette
+liste est vide, et si c'est le cas, elle alloue une instance de la
+structure thread, sauvegarde le contexte du main dans cette instance
+et la place à la tête de la liste.  Puis elle crée une instance de la
+structure thread avec la fonction passée en paramètre et retourne un
+thread\_t pointant sur cette structure.  ~~\\
+\begin{verbatim}
+int thread_yield(void);
+\end{verbatim}
+Cette fonction fait un $swapcontext$ sur le contexte de la tête de la
+liste "ready" (qui est le thread courant) et celui de l'élément
+suivant.  ~~\\
+\begin{verbatim}
+int thread_join(thread_t thread, void **retval);
+\end{verbatim}
+Cette fonction vérifie tout d'abord si le thread qu'on veut attendre
+est dans la liste "ready". Si c'est le cas alors elle se met dans la
+liste des dormants de ce thread et passe la main au suivant.  Sinon
+elle vérifie si ce thread est dans la liste "zombie", auquel cas 
+elle prend la valeur de retour de ce thread et continue son exécution.
+Enfin si ce thread n'est pas dans la liste "zombie" alors elle
+retourne -1 pour dire que l'appel a échoué et que ce thread n'existe
+pas.  ~~\\
+\begin{verbatim}
+void thread_exit(void *retval);
+\end{verbatim}
+Cette fonction réveille tous les threads de sa liste des dormants et
+met à jour son champ retval avec la valeur en paramètre. Puis elle se
+met dans la liste "zombie" et passe la main au suivant.
+
+\section{La mémoire}
+Pour l'instant aucune libération de mémoire n'est faite. En
+particulier nous ne nous sommes pas encore posé la question de quand
+libérer les threads de la liste zombie. Cela pose un problème
+évident lorsque le nombre de threads devient important. Nous nous
+attellerons donc en priorité à la résolution de ce problème.
+
+\section{Améliorations prévue}
+Nous avons implémenté les programmes parallèles du calcul de la suite
+de Fibonacci et de la somme des élément d'un tableau par
+diviser-pour-régner. Cela nous permettra de tester les performances de
+notre bibliothèque, en évaluant le temps d'exécution en fonction de la
+taille de l'entrée. Il nous semble que la gestion du thread principal
+est déjà prise en compte, il conviendra de s'en assurer. Nous pensons
+mettre au point des fonctions de synchronisation de type
+sémaphore. Nous aimerions aussi nous pencher sur la gestion de la
+préemption et des signaux.
+
+
+>>>>>>> 04648c0efa9873b3fd68e5921bf83eadf84ac5cd
 \end{document}

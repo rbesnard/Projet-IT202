@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+
 static void * threadfunc(void * arg)
 {
   char *name = arg;
@@ -32,7 +33,7 @@ int main(int argc, char *argv[])
   assert(!err);
   err = thread_join(thread1, &retval1);
   assert(!err);
-  printf("les threads ont terminé en renvoyant '%s' and '%s'\n",
+  printf("les threads ont terminé en renvoyant '%s' et '%s'\n",
 	 (char *) retval1, (char *) retval2);
 
   return 0;

@@ -34,4 +34,20 @@ extern int thread_join(thread_t thread, void **retval);
  */
 extern void thread_exit(void *retval)__attribute__ ((__noreturn__));
 
+
+/* envoyer un signal a un thread
+ */
+void thread_kill (thread_t thr, int sig);
+
+/* attribuer une fonction de traitement a un signal
+*/
+void thread_signal(thread_t thr, int sig, void(*sig_func)(int));
+
+/* initialiser la table de traitement des signaux
+*/
+void thread_initSigTab(thread_t thr);
+
+/* traiter les signaux d'un thread
+*/
+void thread_sigTreat(thread_t thr);
 #endif /* __THREAD_H__ */
