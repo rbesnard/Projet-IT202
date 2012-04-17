@@ -193,6 +193,19 @@ void thread_exit(void *retval) {
     zombie_list = g_list_append(zombie_list, head);
     ready_list = g_list_remove(ready_list, head);
 
+    struct itimerval *new_value, *old_value;
+
+    new_value->it_interval = ;
+    new_value->it_value = ;
+
+    old_value->it_interval = ;
+    old_value->it_value = ;
+
+
+    setitimer(ITIMER_VIRTUAL,
+	      new_value,
+	      old_value);
+
     setcontext(&(((thread_t)g_list_nth_data(ready_list, 0))->uc));
 
     exit(0);
@@ -220,7 +233,7 @@ void thread_signal(thread_t thr, int sig, void (*sig_func)(int)){
 
 void thread_initSigTab(thread_t thr){
     int i;
-  
+ 
     for(i=0; i<NB_SIG; i++)
 	thr->treat_tab[i]=basic_sig_treatment;
 
